@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: bigdata-ecommerce
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        value: 192.168.100.110:9092
+      - key: SERVER_PORT
+        value: 8080
