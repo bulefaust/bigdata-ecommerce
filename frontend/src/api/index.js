@@ -8,6 +8,8 @@ export const getHotProducts = (limit = 8) => request.get('/product/hot', { param
 export const getRecommendProducts = (params) => request.get('/product/recommend', { params })
 export const getSimilarProducts = (id, limit = 6) => request.get(`/product/similar/${id}`, { params: { limit } })
 export const getRandomProducts = (limit = 8) => request.get('/product/random', { params: { limit } })
+export const getProductSpecs = (id) => request.get(`/product/${id}/specs`)
+export const getProductReviews = (id) => request.get(`/product/${id}/reviews`)
 
 export const createOrder = (userId, productId, quantity) =>
   request.post('/order/create', { userId, productId, quantity })

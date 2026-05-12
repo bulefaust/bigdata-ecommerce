@@ -98,6 +98,13 @@
         </div>
       </div>
     </footer>
+    <a
+      class="test-btn"
+      href="javascript:;"
+      @click="goRandomLink"
+      target="_blank"
+      rel="noopener"
+    >我的喜好</a>
   </div>
 </template>
 
@@ -141,6 +148,13 @@ function selectCat(cat) {
 function handleLogout() {
   userStore.logout()
   router.push('/login')
+}
+
+function goRandomLink() {
+  const url = Math.random() < 0.5
+    ? 'https://www.bilibili.com/video/BV1g9kBYzEdi/?spm_id_from=333.337.search-card.all.click&vd_source=68dccab6b08a022fa6dc2519a0360464'
+    : 'https://ak.hypergryph.com/'
+  window.open(url, '_blank')
 }
 
 provide('selectedCat', selectedCat)
@@ -411,5 +425,27 @@ provide('selectedCat', selectedCat)
 .footer-bottom p {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.test-btn {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 999;
+  padding: 8px 18px;
+  font-size: 14px;
+  color: var(--text-muted);
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.test-btn:hover {
+  opacity: 1;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 </style>

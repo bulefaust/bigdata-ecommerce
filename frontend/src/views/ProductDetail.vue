@@ -83,34 +83,57 @@
 
       <div class="detail-sections">
         <div class="detail-tabs">
-          <div class="tab active">商品详情</div>
-          <div class="tab">规格参数</div>
-          <div class="tab">用户评价</div>
+          <div class="tab" :class="{ active: activeTab === 'detail' }" @click="activeTab = 'detail'">商品详情</div>
+          <div class="tab" :class="{ active: activeTab === 'specs' }" @click="activeTab = 'specs'">规格参数</div>
+          <div class="tab" :class="{ active: activeTab === 'reviews' }" @click="activeTab = 'reviews'">用户评价（{{ reviews.length }}）</div>
         </div>
 
-        <div class="detail-content">
+        <div class="detail-content" v-if="activeTab === 'detail'">
           <div class="spec-table">
-            <div class="spec-row">
-              <span class="spec-label">品牌</span>
-              <span class="spec-value">{{ product.name.split(' ')[0] }}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">品类</span>
-              <span class="spec-value">{{ product.category }}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">商品名称</span>
-              <span class="spec-value">{{ product.name }}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">商品描述</span>
-              <span class="spec-value">{{ product.description }}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">库存数量</span>
-              <span class="spec-value">{{ product.stock }}件</span>
+            <div class="spec-row" v-for="spec in specs.slice(0, 5)" :key="spec.id">
+              <span class="spec-label">{{ spec.specName }}</span>
+              <span class="spec-value">{{ spec.specValue }}</span>
             </div>
           </div>
+        </div>
+
+        <div class="detail-content" v-if="activeTab === 'specs'">
+          <div class="spec-table" v-if="specs.length">
+            <div class="spec-row" v-for="spec in specs" :key="spec.id">
+              <span class="spec-label">{{ spec.specName }}</span>
+              <span class="spec-value">{{ spec.specValue }}</span>
+            </div>
+          </div>
+          <div class="empty-tab" v-else>暂无规格参数</div>
+        </div>
+
+        <div class="detail-content" v-if="activeTab === 'reviews'">
+          <div class="review-summary" v-if="reviews.length">
+            <div class="review-score">
+              <span class="score-num">{{ avgRating }}</span>
+              <span class="score-label">综合评分</span>
+            </div>
+            <div class="review-bars">
+              <div class="bar-row" v-for="s in 5" :key="s">
+                <span class="bar-label">{{ 6 - s }}星</span>
+                <div class="bar-track"><div class="bar-fill" :style="{ width: ratingPercent(6 - s) + '%' }"></div></div>
+                <span class="bar-pct">{{ ratingPercent(6 - s) }}%</span>
+              </div>
+            </div>
+          </div>
+          <div class="review-list" v-if="reviews.length">
+            <div class="review-item" v-for="review in reviews" :key="review.id">
+              <div class="review-head">
+                <span class="review-user">{{ review.username }}</span>
+                <span class="review-stars">
+                  <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= review.rating }">★</span>
+                </span>
+                <span class="review-time">{{ review.createTime }}</span>
+              </div>
+              <p class="review-content">{{ review.content }}</p>
+            </div>
+          </div>
+          <div class="empty-tab" v-else>暂无用户评价</div>
         </div>
       </div>
 
@@ -138,9 +161,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getProductById, createOrder, getSimilarProducts } from '../api'
+import { getProductById, createOrder, getSimilarProducts, getProductSpecs, getProductReviews } from '../api'
 import { startBrowseTimer, endBrowseTimer, trackCart, trackPurchase } from '../tracker'
 import { useUserStore } from '../store/user'
 import { useCartStore } from '../store/cart'
@@ -154,18 +177,43 @@ const cartStore = useCartStore()
 const product = ref(null)
 const quantity = ref(1)
 const similarProducts = ref([])
+const specs = ref([])
+const reviews = ref([])
 const isFav = ref(false)
+const activeTab = ref('detail')
+
+const avgRating = computed(() => {
+  if (!reviews.value.length) return '0.0'
+  const sum = reviews.value.reduce((a, r) => a + r.rating, 0)
+  return (sum / reviews.value.length).toFixed(1)
+})
+
+function ratingPercent(star) {
+  if (!reviews.value.length) return 0
+  const count = reviews.value.filter(r => r.rating === star).length
+  return Math.round(count / reviews.value.length * 100)
+}
 
 async function loadProduct(id) {
   product.value = await getProductById(id)
   if (product.value) {
     startBrowseTimer(product.value.id, product.value.category)
     loadSimilar(id)
+    loadSpecs(id)
+    loadReviews(id)
   }
 }
 
 async function loadSimilar(id) {
   try { similarProducts.value = await getSimilarProducts(id, 6) } catch { similarProducts.value = [] }
+}
+
+async function loadSpecs(id) {
+  try { specs.value = await getProductSpecs(id) } catch { specs.value = [] }
+}
+
+async function loadReviews(id) {
+  try { reviews.value = await getProductReviews(id) } catch { reviews.value = [] }
 }
 
 onMounted(() => loadProduct(route.params.id))
@@ -582,6 +630,136 @@ function goDetail(id) {
 .spec-value {
   font-size: 13px;
   color: var(--text-primary);
+}
+
+.empty-tab {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.review-summary {
+  display: flex;
+  gap: 32px;
+  padding: 20px;
+  background: var(--bg-gray);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.review-score {
+  text-align: center;
+  min-width: 100px;
+}
+
+.score-num {
+  display: block;
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.review-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  width: 30px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.bar-pct {
+  font-size: 12px;
+  color: var(--text-muted);
+  width: 36px;
+  text-align: right;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.review-user {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.review-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.star {
+  font-size: 14px;
+  color: var(--border-medium);
+}
+
+.star.filled {
+  color: var(--color-gold);
+}
+
+.review-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.review-content {
+  font-size: 14px;
+  color: var(--text-regular);
+  line-height: 1.6;
 }
 
 .similar-section {
