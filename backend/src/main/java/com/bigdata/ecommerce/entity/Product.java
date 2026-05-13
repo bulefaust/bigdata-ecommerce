@@ -16,6 +16,8 @@ public class Product {
     private Integer stock;
     private String description;
     private String imageUrl;
+    private Long sellerId;
+    private Integer status;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

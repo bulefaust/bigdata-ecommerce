@@ -5,6 +5,7 @@ import com.bigdata.ecommerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,5 +28,17 @@ public class UserController {
     @GetMapping("/{id}")
     public User getById(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    @GetMapping("/list")
+    public List<User> list() {
+        return userService.listUsers();
+    }
+
+    @PostMapping("/update-role")
+    public User updateRole(@RequestBody Map<String, Object> body) {
+        Long id = Long.valueOf(body.get("id").toString());
+        String role = body.get("role").toString();
+        return userService.updateRole(id, role);
     }
 }

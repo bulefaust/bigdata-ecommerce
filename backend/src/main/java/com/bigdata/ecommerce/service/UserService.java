@@ -5,6 +5,8 @@ import com.bigdata.ecommerce.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -26,5 +28,18 @@ public class UserService {
                 .eq(User::getUsername, username)
                 .eq(User::getPassword, password)
         );
+    }
+
+    public List<User> listUsers() {
+        return userMapper.selectList(null);
+    }
+
+    public User updateRole(Long id, String role) {
+        User user = userMapper.selectById(id);
+        if (user != null) {
+            user.setRole(role);
+            userMapper.updateById(user);
+        }
+        return user;
     }
 }

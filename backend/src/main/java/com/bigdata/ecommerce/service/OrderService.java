@@ -47,6 +47,10 @@ public class OrderService {
         return orderMapper.selectPage(page, wrapper);
     }
 
+    public void deleteOrder(Long id) {
+        orderMapper.deleteById(id);
+    }
+
     private String generateOrderNo() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + UUID.randomUUID().toString().substring(0, 6).toUpperCase();

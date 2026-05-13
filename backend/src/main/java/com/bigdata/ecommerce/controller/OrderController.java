@@ -30,4 +30,9 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int pageSize) {
         return orderService.listByUserId(userId, pageNum, pageSize);
     }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+    }
 }

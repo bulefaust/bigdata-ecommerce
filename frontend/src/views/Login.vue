@@ -37,7 +37,7 @@ async function handleLogin() {
   try {
     const user = await login(form.value.username, form.value.password)
     if (user) {
-      userStore.setUser(user.id, user.username)
+      userStore.setUser(user.id, user.username, user.role)
       setTrackUserId(user.id)
       ElMessage.success('登录成功')
       router.push('/')
@@ -59,82 +59,102 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   background: var(--bg-body);
+  font-family: var(--font-body);
 }
 
 .auth-card {
-  width: 400px;
-  background: var(--bg-white);
-  border-radius: var(--radius-lg);
-  padding: 40px;
-  box-shadow: var(--shadow-lg);
+  width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.auth-card::before {
+  content: '';
+  display: block;
+  height: 130px;
+  background: var(--gradient-primary);
 }
 
 .auth-card h1 {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin: -90px 48px 6px;
+  position: relative;
 }
 
 .auth-sub {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-bottom: 28px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  margin: 0 48px 36px;
+  position: relative;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
+  padding: 0 48px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .field label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .field input {
-  padding: 10px 14px;
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   font-size: 14px;
   outline: none;
-  font-family: inherit;
   color: var(--text-primary);
-  transition: border-color 0.2s;
+  background: var(--bg-elevated);
+  transition: all var(--transition-base);
 }
 
 .field input:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+  background: var(--bg-surface);
 }
 
 .field input::placeholder {
-  color: var(--text-placeholder);
+  color: var(--text-tertiary);
 }
 
 .btn-login {
-  padding: 12px;
-  background: var(--color-primary);
+  padding: 14px;
+  background: var(--gradient-primary);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
-  font-size: 16px;
-  font-weight: 700;
+  border-radius: var(--radius-xl);
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
   margin-top: 8px;
-  transition: background 0.2s;
+  transition: all var(--transition-base);
 }
 
 .btn-login:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-login:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-login:disabled {
@@ -144,13 +164,20 @@ async function handleLogin() {
 
 .auth-link {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
+  padding-bottom: 36px;
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .auth-link a {
-  color: var(--color-primary);
+  color: var(--color-primary-light);
   font-weight: 600;
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.auth-link a:hover {
+  color: var(--color-primary);
 }
 </style>

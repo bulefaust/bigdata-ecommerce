@@ -16,6 +16,8 @@ public class User {
     private Integer gender;
     private Integer age;
     private String avatar;
+    private String role;
+    private String storeName;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

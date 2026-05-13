@@ -13,6 +13,30 @@ const routes = [
     ],
   },
   {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('../views/Dashboard.vue'),
+    meta: { requiresAdmin: true },
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('../views/Admin.vue'),
+    meta: { requiresAdmin: true },
+  },
+  {
+    path: '/review',
+    name: 'Review',
+    component: () => import('../views/Review.vue'),
+    meta: { requiresAdmin: true },
+  },
+  {
+    path: '/seller',
+    name: 'Seller',
+    component: () => import('../views/Seller.vue'),
+    meta: { requiresSeller: true },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),
@@ -27,6 +51,34 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAdmin) {
+    const role = localStorage.getItem('userRole')
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      next({ path: '/login', query: { redirect: to.fullPath } })
+      return
+    }
+    if (role !== 'admin') {
+      next('/')
+      return
+    }
+  }
+  if (to.meta.requiresSeller) {
+    const role = localStorage.getItem('userRole')
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      next({ path: '/login', query: { redirect: to.fullPath } })
+      return
+    }
+    if (role !== 'seller' && role !== 'admin') {
+      next('/')
+      return
+    }
+  }
+  next()
 })
 
 export default router

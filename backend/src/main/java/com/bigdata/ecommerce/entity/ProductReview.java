@@ -12,6 +12,7 @@ public class ProductReview {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long productId;
+    private Long userId;
     private String username;
     private Integer rating;
     private String content;

@@ -20,6 +20,7 @@ public class ProductService {
     public Page<Product> listProducts(int pageNum, int pageSize, String category) {
         Page<Product> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ne(Product::getStatus, 2);
         if (category != null && !category.isEmpty()) {
             wrapper.eq(Product::getCategory, category);
         }
@@ -30,12 +31,13 @@ public class ProductService {
     public Page<Product> searchProducts(int pageNum, int pageSize, String keyword) {
         Page<Product> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ne(Product::getStatus, 2);
         if (keyword != null && !keyword.isEmpty()) {
-            wrapper.like(Product::getName, keyword)
+            wrapper.and(w -> w.like(Product::getName, keyword)
                    .or()
                    .like(Product::getDescription, keyword)
                    .or()
-                   .like(Product::getCategory, keyword);
+                   .like(Product::getCategory, keyword));
         }
         wrapper.orderByDesc(Product::getCreateTime);
         return productMapper.selectPage(page, wrapper);
@@ -52,9 +54,18 @@ public class ProductService {
     }
 
     public List<Product> getHotProducts(int limit) {
+        LambdaQueryWrapper<Product> countWrapper = new LambdaQueryWrapper<>();
+        Long total = productMapper.selectCount(countWrapper);
+        if (total <= limit) {
+            LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+            wrapper.orderByDesc(Product::getCreateTime);
+            wrapper.last("LIMIT " + limit);
+            return productMapper.selectList(wrapper);
+        }
+        Random random = new Random();
+        int offset = random.nextInt((int) (total - limit));
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.orderByDesc(Product::getCreateTime);
-        wrapper.last("LIMIT " + limit);
+        wrapper.last("LIMIT " + limit + " OFFSET " + offset);
         return productMapper.selectList(wrapper);
     }
 

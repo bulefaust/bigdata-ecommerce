@@ -13,6 +13,10 @@
             <router-link to="/register">免费注册</router-link>
           </template>
           <router-link to="/order">我的订单</router-link>
+          <router-link v-if="userStore.role === 'seller' || userStore.isAdmin" to="/seller" class="seller-link">卖家中心</router-link>
+          <router-link v-if="userStore.isAdmin" to="/admin" class="dash-link">管理后台</router-link>
+          <router-link v-if="userStore.isAdmin" to="/review" class="review-link">商品审核</router-link>
+          <router-link v-if="userStore.isAdmin" to="/dashboard" class="dash-link">数据大屏</router-link>
         </div>
       </div>
     </header>
@@ -20,19 +24,25 @@
     <header class="main-header">
       <div class="header-inner">
         <div class="logo" @click="$router.push('/')">
-          <span class="logo-text">DataMall</span>
-          <span class="logo-sub">智能电商</span>
+          <span class="logo-icon">D</span>
+          <div class="logo-text-wrap">
+            <span class="logo-text">DataMall</span>
+            <span class="logo-sub">智能电商平台</span>
+          </div>
         </div>
 
         <div class="search-wrap">
           <div class="search-box">
             <input
               v-model="searchKeyword"
-              placeholder="搜索商品..."
+              placeholder="搜索你想要的商品..."
               class="search-input"
               @keyup.enter="handleSearch"
             />
-            <button class="search-btn" @click="handleSearch">搜索</button>
+            <button class="search-btn" @click="handleSearch">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              搜索
+            </button>
           </div>
           <div class="hot-words">
             <span v-for="w in hotWords" :key="w" @click="quickSearch(w)">{{ w }}</span>
@@ -41,56 +51,47 @@
 
         <div class="header-cart" @click="$router.push('/cart')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-          <span>购物车</span>
           <em v-if="cartStore.totalCount > 0">{{ cartStore.totalCount }}</em>
         </div>
       </div>
     </header>
 
-    <nav class="category-nav" v-if="route.path === '/'">
-      <div class="nav-inner">
-        <div
-          v-for="cat in categories"
-          :key="cat"
-          class="nav-item"
-          :class="{ active: selectedCat === cat }"
-          @click="selectCat(cat)"
-        >{{ cat }}</div>
-      </div>
-    </nav>
-
     <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <component :is="Component" :selectedCategory="selectedCat" @update:selectedCategory="selectedCat = $event" />
-      </router-view>
+      <router-view />
     </main>
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <div class="footer-links">
-          <div class="footer-col">
-            <h4>购物指南</h4>
-            <a href="javascript:;">购物流程</a>
-            <a href="javascript:;">会员介绍</a>
-            <a href="javascript:;">常见问题</a>
+        <div class="footer-top">
+          <div class="footer-brand">
+            <span class="footer-logo">DataMall</span>
+            <p>数据驱动智慧购物，让每一次选择更懂你</p>
           </div>
-          <div class="footer-col">
-            <h4>配送方式</h4>
-            <a href="javascript:;">上门自提</a>
-            <a href="javascript:;">快递运输</a>
-            <a href="javascript:;">特快专递</a>
-          </div>
-          <div class="footer-col">
-            <h4>支付方式</h4>
-            <a href="javascript:;">货到付款</a>
-            <a href="javascript:;">在线支付</a>
-            <a href="javascript:;">分期付款</a>
-          </div>
-          <div class="footer-col">
-            <h4>售后服务</h4>
-            <a href="javascript:;">退换货政策</a>
-            <a href="javascript:;">退换货流程</a>
-            <a href="javascript:;">价格保护</a>
+          <div class="footer-links">
+            <div class="footer-col">
+              <h4>购物指南</h4>
+              <a href="javascript:;">购物流程</a>
+              <a href="javascript:;">会员介绍</a>
+              <a href="javascript:;">常见问题</a>
+            </div>
+            <div class="footer-col">
+              <h4>配送方式</h4>
+              <a href="javascript:;">上门自提</a>
+              <a href="javascript:;">快递运输</a>
+              <a href="javascript:;">特快专递</a>
+            </div>
+            <div class="footer-col">
+              <h4>支付方式</h4>
+              <a href="javascript:;">货到付款</a>
+              <a href="javascript:;">在线支付</a>
+              <a href="javascript:;">分期付款</a>
+            </div>
+            <div class="footer-col">
+              <h4>售后服务</h4>
+              <a href="javascript:;">退换货政策</a>
+              <a href="javascript:;">退换货流程</a>
+              <a href="javascript:;">价格保护</a>
+            </div>
           </div>
         </div>
         <div class="footer-bottom">
@@ -109,22 +110,18 @@
 </template>
 
 <script setup>
-import { ref, provide } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '../store/user'
 import { useCartStore } from '../store/cart'
 import { trackSearch } from '../tracker'
 
-const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const cartStore = useCartStore()
 
 const searchKeyword = ref('')
-const selectedCat = ref('全部')
 const hotWords = ['iPhone', '华为', '降噪耳机', 'MacBook', 'PS5', '无人机']
-
-const categories = ['全部', '手机', '电脑', '耳机', '平板', '穿戴', '游戏', '摄影', '配件']
 
 function handleSearch() {
   if (searchKeyword.value.trim()) {
@@ -138,13 +135,6 @@ function quickSearch(w) {
   handleSearch()
 }
 
-function selectCat(cat) {
-  selectedCat.value = cat
-  if (route.path !== '/') {
-    router.push('/')
-  }
-}
-
 function handleLogout() {
   userStore.logout()
   router.push('/login')
@@ -156,8 +146,6 @@ function goRandomLink() {
     : 'https://ak.hypergryph.com/'
   window.open(url, '_blank')
 }
-
-provide('selectedCat', selectedCat)
 </script>
 
 <style scoped>
@@ -169,93 +157,130 @@ provide('selectedCat', selectedCat)
 }
 
 .top-bar {
-  background: var(--bg-gray);
-  border-bottom: 1px solid var(--border-light);
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 .top-inner {
   max-width: 1200px;
   margin: 0 auto;
-  height: 32px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 24px;
 }
 
 .top-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .top-right a {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 12px;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
 }
 
 .top-right a:hover {
-  color: var(--color-primary);
+  color: var(--text-primary);
 }
 
 .user-greeting {
-  color: var(--text-primary);
-  font-weight: 500;
+  color: var(--color-primary-light);
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .main-header {
-  background: var(--bg-white);
-  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 100;
+  background: rgba(11,17,32,0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 12px rgba(0,212,255,0.08);
 }
 
 .header-inner {
   max-width: 1200px;
   margin: 0 auto;
-  height: 80px;
+  height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 24px;
   gap: 40px;
 }
 
 .logo {
   cursor: pointer;
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.logo-text {
-  font-size: 28px;
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--gradient-primary);
+  color: #fff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   font-weight: 900;
-  color: var(--color-primary);
-  letter-spacing: -1px;
+  font-family: var(--font-display);
+  box-shadow: 0 0 20px rgba(0,212,255,0.3);
+}
+
+.logo-text-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.3px;
 }
 
 .logo-sub {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
 }
 
 .search-wrap {
   flex: 1;
-  max-width: 560px;
+  max-width: 520px;
 }
 
 .search-box {
   display: flex;
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
   overflow: hidden;
   height: 40px;
+  transition: all var(--transition-base);
+  background: var(--bg-card);
+}
+
+.search-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+  background: var(--bg-card-hover);
 }
 
 .search-input {
@@ -264,114 +289,95 @@ provide('selectedCat', selectedCat)
   padding: 0 16px;
   font-size: 14px;
   outline: none;
-  font-family: inherit;
+  font-family: var(--font-body);
   color: var(--text-primary);
+  background: transparent;
 }
 
 .search-input::placeholder {
-  color: var(--text-placeholder);
+  color: var(--text-tertiary);
 }
 
 .search-btn {
-  width: 80px;
-  background: var(--color-primary);
-  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 20px;
+  background: transparent;
+  color: var(--text-secondary);
   border: none;
+  border-left: 1px solid var(--border-subtle);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
+  font-family: var(--font-body);
+  transition: all var(--transition-fast);
 }
 
 .search-btn:hover {
-  background: var(--color-primary-dark);
+  color: var(--color-primary);
+  background: rgba(0,212,255,0.08);
 }
 
 .hot-words {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   margin-top: 6px;
+  padding-left: 16px;
 }
 
 .hot-words span {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--text-tertiary);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .hot-words span:hover {
-  color: var(--color-primary);
+  color: var(--text-primary);
+  background: var(--bg-card);
 }
 
 .header-cart {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 8px 20px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
-  background: var(--bg-white);
+  transition: all var(--transition-fast);
+  background: var(--bg-card);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .header-cart:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
 }
 
 .header-cart em {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -2px;
+  right: -2px;
   background: var(--color-primary);
   color: #fff;
   font-size: 10px;
   font-style: normal;
   font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  line-height: 18px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
   text-align: center;
-  border-radius: 9px;
-  padding: 0 4px;
-}
-
-.category-nav {
-  background: var(--bg-white);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.nav-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  padding: 0 16px;
-  gap: 0;
-}
-
-.nav-item {
-  padding: 12px 20px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.nav-item:hover {
-  color: var(--color-primary);
-}
-
-.nav-item.active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
-  font-weight: 600;
+  border-radius: 8px;
+  padding: 0 3px;
+  font-size: 9px;
 }
 
 .main-content {
@@ -379,73 +385,167 @@ provide('selectedCat', selectedCat)
 }
 
 .site-footer {
-  background: var(--bg-white);
-  border-top: 1px solid var(--border-light);
-  margin-top: 40px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -1px 12px rgba(0,212,255,0.06);
+  margin-top: 60px;
 }
 
 .footer-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 16px 16px;
+  padding: 48px 24px 24px;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 60px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.footer-brand {
+  max-width: 260px;
+}
+
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.footer-brand p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-tertiary);
 }
 
 .footer-links {
   display: flex;
-  justify-content: space-around;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border-light);
+  gap: 60px;
 }
 
 .footer-col h4 {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  letter-spacing: 0.5px;
 }
 
 .footer-col a {
   display: block;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   text-decoration: none;
-  margin-bottom: 8px;
-  transition: color 0.2s;
+  margin-bottom: 10px;
+  transition: color var(--transition-fast);
 }
 
 .footer-col a:hover {
-  color: var(--color-primary);
+  color: var(--text-primary);
 }
 
 .footer-bottom {
   text-align: center;
-  padding-top: 16px;
+  padding-top: 20px;
 }
 
 .footer-bottom p {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+}
+
+.dash-link {
+  color: var(--color-primary) !important;
+  font-weight: 600;
+}
+
+.seller-link {
+  color: var(--color-green) !important;
+  font-weight: 600;
+}
+
+.review-link {
+  color: var(--color-orange) !important;
+  font-weight: 600;
 }
 
 .test-btn {
   position: fixed;
-  left: 12px;
-  bottom: 12px;
+  left: 16px;
+  bottom: 16px;
   z-index: 999;
   padding: 8px 18px;
-  font-size: 14px;
-  color: var(--text-muted);
-  background: var(--bg-white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
   text-decoration: none;
-  opacity: 0.5;
-  transition: opacity 0.2s;
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-base);
+  font-weight: 500;
 }
 
 .test-btn:hover {
-  opacity: 1;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+  box-shadow: 0 0 12px rgba(0,212,255,0.2);
+}
+
+@media (max-width: 768px) {
+  .header-inner {
+    height: 56px;
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+  }
+
+  .logo-sub {
+    display: none;
+  }
+
+  .search-wrap {
+    max-width: none;
+  }
+
+  .hot-words {
+    display: none;
+  }
+
+  .header-cart span {
+    display: none;
+  }
+
+  .footer-top {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .footer-col {
+    min-width: 40%;
+  }
 }
 </style>
