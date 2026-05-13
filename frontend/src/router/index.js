@@ -37,6 +37,12 @@ const routes = [
     meta: { requiresSeller: true },
   },
   {
+    path: '/bigdata',
+    name: 'BigData',
+    component: () => import('../views/BigData.vue'),
+    meta: { requiresAdmin: true },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),

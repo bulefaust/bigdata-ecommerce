@@ -17,6 +17,7 @@
           <router-link v-if="userStore.isAdmin" to="/admin" class="dash-link">管理后台</router-link>
           <router-link v-if="userStore.isAdmin" to="/review" class="review-link">商品审核</router-link>
           <router-link v-if="userStore.isAdmin" to="/dashboard" class="dash-link">数据大屏</router-link>
+          <router-link v-if="userStore.isAdmin" to="/bigdata" class="bigdata-link">大数据分析</router-link>
         </div>
       </div>
     </header>
@@ -474,6 +475,11 @@ function goRandomLink() {
 
 .review-link {
   color: var(--color-orange) !important;
+  font-weight: 600;
+}
+
+.bigdata-link {
+  color: #a855f7 !important;
   font-weight: 600;
 }
 

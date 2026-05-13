@@ -41,3 +41,10 @@ export const getDashboardCategoryStats = () => request.get('/dashboard/category-
 export const getDashboardBehaviorStats = () => request.get('/dashboard/behavior-stats')
 export const getDashboardHotProducts = () => request.get('/dashboard/hot-products')
 export const getDashboardRealtimeOrders = () => request.get('/dashboard/realtime-orders')
+
+export const getHotProductsAnalytics = (limit = 10, timeRange = '1h') => request.get('/analytics/hot', { params: { limit, timeRange } })
+export const getUserActivity = (startDate, endDate) => request.get('/analytics/user-activity', { params: { startDate, endDate } })
+export const getUserRetention = (days = 7) => request.get('/analytics/retention', { params: { days } })
+export const getConversionFunnel = (startDate, endDate) => request.get('/analytics/funnel', { params: { startDate, endDate } })
+export const getSalesForecast = (days = 30) => request.get('/analytics/sales-forecast', { params: { days } })
+export const updateHotProducts = () => request.post('/analytics/update-hot')

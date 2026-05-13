@@ -1,0 +1,1 @@
+import{P as t}from"./index-CtVHHhky.js";import{u as o}from"./user-CTJFi3gi.js";const s=t.create({baseURL:"/api",timeout:1e4});s.interceptors.request.use(e=>{const r=o();return r.userId&&(e.headers["X-User-Id"]=r.userId),e});s.interceptors.response.use(e=>e.data,e=>(console.error("Request error:",e),Promise.reject(e)));export{s as r};
